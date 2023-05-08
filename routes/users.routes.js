@@ -87,14 +87,19 @@ router.put("/posts/:id", async (req, res) => {
     .catch((err) => res.status(400).send(err));
 });
 
-router.delete("/delete/posts/:postsId", async (req, res) => {
-  await User.findOneAndUpdate({
-    $pull: {
-      posts: {
-        _id: req.params.postsId,
+router.delete("/delete/posts/:id", async (req, res) => {
+  const postsId = req.body.postsId;
+
+  await User.findOneAndUpdate(
+    { _id: req.params.id },
+    {
+      $pull: {
+        posts: {
+          _id: postsId,
+        },
       },
-    },
-  })
+    }
+  )
     .then((result) => res.json("Posts successfully deleted."))
     .catch((err) => res.status(400).send(err));
 });
