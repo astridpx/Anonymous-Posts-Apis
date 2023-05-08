@@ -3,12 +3,19 @@ const User = require("../model/Users.schema");
 const bcrypt = require("bcrypt");
 const Authorization = require("../middleware/Auth");
 const jwt = require("jsonwebtoken");
-const DeletePostsAuth = require("../middleware/deletePostsAuth");
+const UserAuth = require("../middleware/deletePostsAuth");
 
 router.get("/", Authorization, async (req, res) => {
   await User.find()
     .then((result) => res.json(result))
     .catch((err) => res.status(400).json(err));
+});
+
+// ? GET all data of specific user
+router.get("/:id", UserAuth, async (req, res) => {
+  await User.findById(req.params.id)
+    .then((result) => res.json(result))
+    .catch((err) => res.status(401).json(err));
 });
 
 // * Register routes for all users
@@ -95,7 +102,7 @@ router.put("/posts/:id", Authorization, async (req, res) => {
     .catch((err) => res.status(400).send(err));
 });
 
-router.delete("/delete/posts/:id", DeletePostsAuth, async (req, res) => {
+router.delete("/delete/posts/:id", UserAuth, async (req, res) => {
   const postsId = req.body.postsId;
 
   await User.findOneAndUpdate(

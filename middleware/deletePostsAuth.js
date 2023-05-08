@@ -10,7 +10,10 @@ module.exports = async (req, res, next) => {
     const user = await jwt.verify(token, process.env.TOKEN_KEY);
 
     if (user.userid !== req.params.id)
-      return res.status(408).send({ message: "You cant delete this posts" });
+      return res.status(408).send({
+        deletemsg: "You cant delete this posts",
+        usermsg: "Invalid Token",
+      });
 
     next();
   } catch (error) {
