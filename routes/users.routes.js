@@ -1,13 +1,16 @@
 const router = require("express").Router();
 const User = require("../model/Users.schema");
 const bcrypt = require("bcrypt");
+const Authorization = require("../middleware/Auth");
+const jwt = require("jsonwebtoken");
 
-router.get("/", async (req, res) => {
+router.get("/", Authorization, async (req, res) => {
   await User.find()
     .then((result) => res.json(result))
     .catch((err) => res.status(400).json(err));
 });
 
+// * Register routes for all users
 router.post("/register", async (req, res) => {
   const username = req.body.username;
   const password = req.body.password;
@@ -33,6 +36,7 @@ router.post("/register", async (req, res) => {
     .catch((err) => res.status(400).json(err));
 });
 
+// * Login routes for all users
 router.post("/login", async (req, res) => {
   const username = req.body.username;
   const password = req.body.password;
@@ -47,13 +51,52 @@ router.post("/login", async (req, res) => {
     if (!validPassword)
       return res.status(401).send({ message: "Invalid Password" });
 
+    const token = await jwt.sign({ username }, process.env.TOKEN_KEY, {
+      expiresIn: "1m",
+    });
+
     res.status(200).send({
       message: "Loggin in Successfull",
+      token,
     });
   } catch {
     res.status(500).send({ message: " auth Server error" + error });
     console.log(error);
   }
+});
+
+// * add Posts routess
+router.put("/posts/:id", async (req, res) => {
+  const id = req.params.id;
+  const username = req.body.username;
+  const title = req.body.title;
+  const content = req.body.content;
+
+  await User.findByIdAndUpdate(
+    { _id: id },
+    {
+      $push: {
+        posts: {
+          title,
+          content,
+        },
+      },
+    }
+  )
+    .then((result) => res.json("Successfullt posted."))
+    .catch((err) => res.status(400).send(err));
+});
+
+router.delete("/delete/posts/:postsId", async (req, res) => {
+  await User.findOneAndUpdate({
+    $pull: {
+      posts: {
+        _id: req.params.postsId,
+      },
+    },
+  })
+    .then((result) => res.json("Posts successfully deleted."))
+    .catch((err) => res.status(400).send(err));
 });
 
 module.exports = router;
