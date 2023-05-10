@@ -80,6 +80,18 @@ router.post("/login", async (req, res) => {
   }
 });
 
+// * GET all posts
+router.get("/all/posts", Authorization, async (req, res) => {
+  try {
+    const posts = await User.find().select("username posts");
+
+    res.json(posts);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
 // * add Posts routess
 router.put("/posts/:id", Authorization, async (req, res) => {
   const id = req.params.id;
